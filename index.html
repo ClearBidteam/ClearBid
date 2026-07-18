@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearBid</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+body{
+    background:#f5f9fb;
+    color:#1f2937;
+}
+
+/* Navigation */
+
+nav{
+    width:100%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 8%;
+    background:#fff;
+    box-shadow:0 2px 12px rgba(0,0,0,.08);
+    position:sticky;
+    top:0;
+    z-index:1000;
+}
+
+.logo{
+    font-size:1.8rem;
+    font-weight:bold;
+    color:#0b74d1;
+}
+
+.logo span{
+    color:#22b573;
+}
+
+nav ul{
+    display:flex;
+    list-style:none;
+    gap:30px;
+}
+
+nav ul li a{
+    text-decoration:none;
+    color:#333;
+    font-weight:600;
+    transition:.3s;
+}
+
+nav ul li a:hover{
+    color:#0b74d1;
+}
+
+.login-btn{
+    text-decoration:none;
+    background:#22b573;
+    color:#fff;
+    padding:10px 20px;
+    border-radius:8px;
+    font-weight:bold;
+    transition:.3s;
+}
+
+.login-btn:hover{
+    background:#19945d;
+}
+
+/* Hero */
+
+.hero{
+    min-height:88vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:60px 8%;
+    background:linear-gradient(135deg,#0b74d1,#22b573);
+    color:#fff;
+}
+
+.hero-content{
+    max-width:800px;
+}
+
+.hero h1{
+    font-size:3.4rem;
+    margin-bottom:20px;
+    line-height:1.2;
+}
+
+.hero p{
+    font-size:1.2rem;
+    line-height:1.8;
+    margin-bottom:40px;
+}
+
+.hero-buttons{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.btn{
+    text-decoration:none;
+    padding:16px 34px;
+    border-radius:10px;
+    font-weight:bold;
+    transition:.3s;
+}
+
+.primary{
+    background:#fff;
+    color:#0b74d1;
+}
+
+.primary:hover{
+    transform:translateY(-3px);
+}
+
+.secondary{
+    border:2px solid #fff;
+    color:#fff;
+}
+
+.secondary:hover{
+    background:#fff;
+    color:#0b74d1;
+}
+
+@media(max-width:768px){
+
+nav{
+    flex-direction:column;
+    gap:15px;
+}
+
+nav ul{
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:18px;
+}
+
+.hero h1{
+    font-size:2.3rem;
+}
+
+.hero p{
+    font-size:1rem;
+}
+
+.hero-buttons{
+    flex-direction:column;
+}
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="logo">Clear<span>Bid</span></div>
+
+    <ul>
+        <li><a href="#">Home</a></li>
+        <li><a href="#">Browse Auctions</a></li>
+        <li><a href="#">Sell</a></li>
+    </ul>
+
+    <a href="#" class="login-btn">Login</a>
+</nav>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Clear your clutter, let buyers compete.</h1>
+
+        <p>
+            Sell single items or entire house, garage, shed, and attic
+            clearances through local online auctions.
+        </p>
+
+        <div class="hero-buttons">
+            <a href="#" class="btn primary">Start Selling</a>
+            <a href="#" class="btn secondary">Browse Auctions</a>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>
