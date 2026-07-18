@@ -1,363 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ClearBid | Online Auctions</title>
-
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial,Helvetica,sans-serif;
-}
-
-body{
-    background:#f7f9fc;
-    color:#222;
-    line-height:1.6;
-}
-
-header{
-    background:#fff;
-    position:sticky;
-    top:0;
-    z-index:1000;
-    box-shadow:0 2px 10px rgba(0,0,0,.08);
-}
-
-nav{
-    max-width:1200px;
-    margin:auto;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:18px 30px;
-}
-
-.logo{
-    font-size:30px;
-    font-weight:800;
-    color:#0d6efd;
-}
-
-.logo span{
-    color:#111;
-}
-
-nav ul{
-    display:flex;
-    list-style:none;
-    gap:30px;
-}
-
-nav a{
-    text-decoration:none;
-    color:#333;
-    font-weight:600;
-    transition:.3s;
-}
-
-nav a:hover{
-    color:#0d6efd;
-}
-
-.hero{
-    max-width:1200px;
-    margin:auto;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:50px;
-    padding:90px 30px;
-}
-
-.hero-text{
-    flex:1;
-}
-
-.hero h1{
-    font-size:56px;
-    margin-bottom:20px;
-    color:#111;
-}
-
-.hero p{
-    font-size:20px;
-    color:#666;
-    margin-bottom:35px;
-    max-width:600px;
-}
-
-.buttons{
-    display:flex;
-    gap:15px;
-}
-
-.btn{
-    padding:15px 28px;
-    border-radius:10px;
-    text-decoration:none;
-    font-weight:bold;
-    transition:.3s;
-}
-
-.primary{
-    background:#0d6efd;
-    color:#fff;
-}
-
-.primary:hover{
-    background:#0b5ed7;
-}
-
-.secondary{
-    background:#fff;
-    color:#0d6efd;
-    border:2px solid #0d6efd;
-}
-
-.secondary:hover{
-    background:#0d6efd;
-    color:#fff;
-}
-
-.hero-image{
-    flex:1;
-    display:flex;
-    justify-content:center;
-}
-
-.mockup{
-    width:100%;
-    max-width:500px;
-    background:#fff;
-    border-radius:18px;
-    padding:25px;
-    box-shadow:0 15px 40px rgba(0,0,0,.12);
-}
-
-.card{
-    background:#f4f8ff;
-    padding:18px;
-    border-radius:12px;
-    margin-bottom:18px;
-}
-
-.bid{
-    display:flex;
-    justify-content:space-between;
-    margin-top:10px;
-    font-weight:bold;
-}
-
-.features{
-    max-width:1200px;
-    margin:auto;
-    padding:40px 30px 90px;
-}
-
-.features h2{
-    text-align:center;
-    font-size:38px;
-    margin-bottom:50px;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:25px;
-}
-
-.feature{
-    background:#fff;
-    padding:30px;
-    border-radius:15px;
-    text-align:center;
-    box-shadow:0 10px 25px rgba(0,0,0,.08);
-}
-
-.feature h3{
-    margin:18px 0 10px;
-}
-
-.icon{
-    font-size:42px;
-}
-
-.cta{
-    background:#0d6efd;
-    color:#fff;
-    text-align:center;
-    padding:80px 20px;
-}
-
-.cta h2{
-    font-size:40px;
-    margin-bottom:20px;
-}
-
-.cta p{
-    margin-bottom:30px;
-    font-size:18px;
-}
-
-footer{
-    background:#111;
-    color:#ccc;
-    text-align:center;
-    padding:30px;
-}
-
-@media(max-width:900px){
-
-.hero{
-    flex-direction:column;
-    text-align:center;
-}
-
-.hero h1{
-    font-size:42px;
-}
-
-.buttons{
-    justify-content:center;
-}
-
-nav{
-    flex-direction:column;
-    gap:20px;
-}
-
-nav ul{
-    flex-wrap:wrap;
-    justify-content:center;
-}
-}
-</style>
-</head>
-
-<body>
-
-<header>
-<nav>
-<div class="logo">Clear<span>Bid</span></div>
-
-<ul>
-<li><a href="#">Home</a></li>
-<li><a href="#">Browse Auctions</a></li>
-<li><a href="#">Sell</a></li>
-<li><a href="#">Login</a></li>
-<li><a href="#">Sign Up</a></li>
-</ul>
-</nav>
-</header>
-
-<section class="hero">
-
-<div class="hero-text">
-<h1>Clear your clutter, let buyers compete.</h1>
-
-<p>
-Sell almost anything through exciting online auctions.
-Create listings in minutes, attract competitive bids,
-and get the best price with ClearBid.
-</p>
-
-<div class="buttons">
-<a href="#" class="btn primary">Start Selling</a>
-<a href="#" class="btn secondary">Browse Auctions</a>
-</div>
-
-</div>
-
-<div class="hero-image">
-
-<div class="mockup">
-
-<div class="card">
-<h3>🚗 2018 Ford Ranger</h3>
-<p>Current Highest Bid</p>
-<div class="bid">
-<span>€14,850</span>
-<span>12 Bids</span>
-</div>
-</div>
-
-<div class="card">
-<h3>📱 iPhone 16 Pro</h3>
-<p>Current Highest Bid</p>
-<div class="bid">
-<span>€835</span>
-<span>21 Bids</span>
-</div>
-</div>
-
-<div class="card">
-<h3>🛋 Modern Sofa</h3>
-<p>Current Highest Bid</p>
-<div class="bid">
-<span>€470</span>
-<span>8 Bids</span>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-<section class="features">
-
-<h2>Why Choose ClearBid?</h2>
-
-<div class="grid">
-
-<div class="feature">
-<div class="icon">⚡</div>
-<h3>Fast Listings</h3>
-<p>Create professional auction listings in just a few minutes.</p>
-</div>
-
-<div class="feature">
-<div class="icon">💰</div>
-<h3>Competitive Bidding</h3>
-<p>Let buyers compete to give you the highest possible price.</p>
-</div>
-
-<div class="feature">
-<div class="icon">🔒</div>
-<h3>Secure Platform</h3>
-<p>Safe accounts, trusted users and secure transactions.</p>
-</div>
-
-<div class="feature">
-<div class="icon">📈</div>
-<h3>Reach More Buyers</h3>
-<p>Expose your listings to thousands of interested bidders.</p>
-</div>
-
-</div>
-
-</section>
-
-<section class="cta">
-
-<h2>Ready to Start Selling?</h2>
-
-<p>Join ClearBid today and turn unwanted items into cash through competitive online auctions.</p>
-
-<a href="#" class="btn secondary" style="background:#fff;color:#0d6efd;border:none;">
-Create Free Account
-</a>
-
-</section>
-
-<footer>
-<p>© 2026 ClearBid. All rights reserved.</p>
-</footer>
-
-</body>
-</html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Browse Auctions | ClearBid</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        :root {
+            --blue: #0d6efd;
+            --dark-blue: #084298;
+            --green: #20c997;
+            --dark: #1d2633;
+            --light: #f5f7fb;
+            --white: #ffffff;
+            --grey: #6c757d;
+            --border: #e4e8ef;
+        }
+
+        body {
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--white);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: auto;
+            padding: 18px 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--blue);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--dark);
+        }
+
+        nav ul {
+            display: flex;
+            align-items: center;
+            gap: 26px;
+            list-style: none;
+        }
+
+        nav a {
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        nav a:hover,
+        nav a.active {
+            color: var(--blue);
+        }
+
+        .signup-button {
+            background: var(--blue);
+            color: white !important;
+            padding: 10px 18px;
+            border-radius: 8px;
+        }
+
+        .signup-button:hover {
+            background: var(--dark-blue);
+        }
+
+        .page-heading {
+            background: linear-gradient(135deg, var(--blue), var(--green));
+            color: var(--white);
+            padding: 60px 25px;
+            text-align: center;
+        }
+
+        .page-heading h1 {
+            font-size: clamp(34px, 6vw, 55px);
+            margin-bottom: 10px;
+        }
+
+        .page-heading p {
+            font-size: 18px;
+            opacity: 0.95;
+        }
+
+        .search-section {
+            max-width: 1200px;
+            margin: -28px auto 30px;
+            padding: 0 25px;
+            position: relative;
+        }
+
+        .search-box {
+            background: var(--white);
+            padding: 18px;
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(
