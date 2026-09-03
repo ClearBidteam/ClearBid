@@ -113,5 +113,11 @@ Already have an account?
 
 </div>
 
+  <script>
+document.querySelector("form").addEventListener("submit", function(event) {
+    event.preventDefault();
+    document.getElementById("success-message").style.display = "block";
+});
+</script>
 </body>
 </html>
