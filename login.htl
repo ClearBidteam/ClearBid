@@ -32,7 +32,7 @@
         }
 
         button {
-            background: #00a86b;
+            background: #16a34a;
             color: white;
             border: none;
             padding: 12px 25px;
