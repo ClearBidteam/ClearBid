@@ -1,0 +1,20 @@
+import { type NextRequest } from "next/server";
+
+import { createClient } from "@/utils/supabase/server";
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const code = searchParams.get("code");
+  const next = searchParams.get("next") ?? "/account";
+
+  if (code) {
+    const supabase = await createClient();
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error) {
+      return Response.redirect(new URL(next, request.url));
+    }
+  }
+
+  return Response.redirect(new URL("/login?error=Could+not+confirm+your+account.", request.url));
+}
