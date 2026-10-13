@@ -5,6 +5,18 @@ import { redirect } from "next/navigation";
 
 import { createClient } from "@/utils/supabase/server";
 
+function getSiteUrl() {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "");
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return "http://localhost:3000";
+}
+
 function redirectWithError(path: string, message: string) {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
 }
@@ -21,6 +33,14 @@ export async function signIn(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    if (error.code === "email_not_confirmed") {
+      redirectWithError("/login", "Your account was created, but your email is not confirmed. Check your inbox for the confirmation link.");
+    }
+
+    if (error.code === "invalid_credentials") {
+      redirectWithError("/login", "We could not sign you in. Check your email and password, or create an account if you have not signed up yet.");
+    }
+
     redirectWithError("/login", error.message);
   }
 
@@ -45,7 +65,7 @@ export async function signUp(formData: FormData) {
       data: {
         full_name: fullName,
       },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/confirm`,
+      emailRedirectTo: `${getSiteUrl()}/auth/confirm`,
     },
   });
 
