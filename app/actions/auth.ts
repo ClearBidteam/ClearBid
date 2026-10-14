@@ -51,7 +51,9 @@ export async function signIn(formData: FormData) {
 export async function signUp(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
-  const fullName = String(formData.get("fullName") ?? "").trim();
+  const firstName = String(formData.get("firstName") ?? "").trim();
+  const lastName = String(formData.get("lastName") ?? "").trim();
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
 
   if (!email || !password) {
     redirectWithError("/signup", "Email and password are required.");
@@ -63,6 +65,8 @@ export async function signUp(formData: FormData) {
     password,
     options: {
       data: {
+        first_name: firstName,
+        last_name: lastName,
         full_name: fullName,
       },
       emailRedirectTo: `${getSiteUrl()}/auth/confirm`,
