@@ -1,12 +1,5 @@
-import { redirect } from "next/navigation";
+import HomePage from "./home-page";
 
-import { createClient } from "@/utils/supabase/server";
-
-export default async function HomePage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  redirect(user ? "/account" : "/signup");
+export default function Page() {
+  return <HomePage />;
 }
