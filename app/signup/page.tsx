@@ -62,8 +62,10 @@ export default async function SignupPage({
               className="min-h-12 w-full rounded-[10px] border border-[#c5d7c8] bg-[#f9fbf8] px-3.5 font-[inherit] focus:border-[#1d7a45] focus:outline-2 focus:outline-[#1d7a45]/20"
               name="password"
               type="password"
-              placeholder="At least 6 characters"
+              placeholder="At least 6 chars, 1 number, 1 symbol"
               minLength={6}
+              pattern="^(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$"
+              title="Password must be at least 6 characters and include at least one number and one special character."
               required
             />
           </label>

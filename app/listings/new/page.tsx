@@ -46,7 +46,7 @@ export default async function NewListingPage({
           </p>
         ) : null}
 
-        <form action={createListing} className="grid gap-5">
+        <form action={createListing} className="grid gap-5" encType="multipart/form-data">
           <div className="grid gap-5 md:grid-cols-2">
             <label className="flex flex-col gap-2 font-semibold text-[#29452f]">
               <span>Listing title</span>
@@ -74,6 +74,46 @@ export default async function NewListingPage({
                 <option value="antiques">Antiques</option>
                 <option value="garden">Garden &amp; shed</option>
               </select>
+            </label>
+          </div>
+
+          <label className="flex flex-col gap-2 font-semibold text-[#29452f]">
+            <span>Short item summary</span>
+            <textarea
+              className="min-h-[80px] w-full rounded-[10px] border border-[#c5d7c8] bg-[#f9fbf8] px-3.5 py-3 font-[inherit] focus:border-[#1d7a45] focus:outline-2 focus:outline-[#1d7a45]/20"
+              name="shortDescription"
+              placeholder="Cordless drill set, ladder and tools."
+              maxLength={180}
+              required
+            />
+          </label>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            <label className="flex flex-col gap-2 font-semibold text-[#29452f]">
+              <span>Item condition</span>
+              <select
+                className="min-h-12 w-full rounded-[10px] border border-[#c5d7c8] bg-[#f9fbf8] px-3.5 font-[inherit] focus:border-[#1d7a45] focus:outline-2 focus:outline-[#1d7a45]/20"
+                name="itemCondition"
+                defaultValue=""
+                required
+              >
+                <option value="" disabled>Select condition</option>
+                <option value="excellent">Excellent</option>
+                <option value="good">Good</option>
+                <option value="fair">Fair</option>
+                <option value="needs_work">Needs work</option>
+              </select>
+            </label>
+
+            <label className="flex flex-col gap-2 font-semibold text-[#29452f]">
+              <span>Listing photo</span>
+              <input
+                className="min-h-12 w-full rounded-[10px] border border-[#c5d7c8] bg-[#f9fbf8] px-3.5 py-2 font-[inherit] file:mr-3 file:rounded-full file:border-0 file:bg-[#edf5ee] file:px-3 file:py-1 file:font-semibold file:text-[#173b2b] focus:border-[#1d7a45] focus:outline-2 focus:outline-[#1d7a45]/20"
+                name="image"
+                type="file"
+                accept="image/*"
+                required
+              />
             </label>
           </div>
 

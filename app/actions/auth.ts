@@ -21,6 +21,10 @@ function redirectWithError(path: string, message: string) {
   redirect(`${path}?error=${encodeURIComponent(message)}`);
 }
 
+function hasStrongPassword(password: string) {
+  return /^(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/.test(password);
+}
+
 export async function signIn(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
@@ -57,6 +61,10 @@ export async function signUp(formData: FormData) {
 
   if (!email || !password) {
     redirectWithError("/signup", "Email and password are required.");
+  }
+
+  if (!hasStrongPassword(password)) {
+    redirectWithError("/signup", "Password must be at least 6 characters and include at least one number and one special character.");
   }
 
   const supabase = await createClient();

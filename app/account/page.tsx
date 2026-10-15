@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { signOut } from "@/app/actions/auth";
+import { getAuctionDisplay } from "@/lib/bid-display";
 import { createClient } from "@/utils/supabase/server";
 
 function formatCurrency(value: number | null | undefined) {
@@ -56,7 +57,7 @@ export default async function AccountPage({
   const [{ data: listingsData, error: listingsError }, { data: bidsData, error: bidsError }] = await Promise.all([
     supabase
       .from("auctions")
-      .select("id, title, location, category, status, starts_at, ends_at, starting_price, reserve_price, created_at")
+      .select("id, title, location, category, status, starts_at, ends_at, starting_price, reserve_price, created_at, short_description, item_condition, image_url")
       .eq("seller_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -68,7 +69,22 @@ export default async function AccountPage({
 
   const listings = listingsError ? [] : listingsData ?? [];
   const bids = bidsError ? [] : bidsData ?? [];
-  const totalSpent = bids.reduce((sum, bid) => sum + Number(bid.amount ?? 0), 0);
+  const listingIds = listings.map((listing) => listing.id);
+  const { data: listingBidsData, error: listingBidsError } = listingIds.length
+    ? await supabase.from("bids").select("auction_id, amount").in("auction_id", listingIds)
+    : { data: [], error: null };
+
+  const highestBidByAuction = new Map<string, number>();
+  for (const bid of listingBidsError ? [] : listingBidsData ?? []) {
+    const auctionId = String(bid.auction_id);
+    const amount = Number(bid.amount ?? 0);
+    const prev = highestBidByAuction.get(auctionId) ?? 0;
+    if (amount > prev) {
+      highestBidByAuction.set(auctionId, amount);
+    }
+  }
+
+  const totalEarned = Array.from(highestBidByAuction.values()).reduce((sum, amount) => sum + amount, 0);
   const activeListings = listings.filter((listing) => listing.status === "active").length;
 
   return (
@@ -153,8 +169,8 @@ export default async function AccountPage({
               </div>
 
               <div className="rounded-[16px] border border-[#edf2ee] bg-[#f9fbf8] p-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64826d]">Total spent</p>
-                <p className="mt-2 text-3xl font-bold text-[#173b2b]">{formatCurrency(totalSpent)}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-[#64826d]">Amount earned</p>
+                <p className="mt-2 text-3xl font-bold text-[#173b2b]">{formatCurrency(totalEarned)}</p>
               </div>
             </div>
           </aside>
@@ -177,23 +193,33 @@ export default async function AccountPage({
               <div className="space-y-4">
                 {listings.map((listing) => (
                   <article key={listing.id} className="rounded-[16px] border border-[#edf2ee] bg-[#f9fbf8] p-4">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                      <div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex-1">
                         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#64826d]">
                           {listing.category}
                         </p>
                         <h3 className="mt-1 text-xl font-bold text-[#173b2b]">{listing.title}</h3>
+                        <p className="mt-2 text-sm text-[#58665d]">{listing.short_description ?? "No summary provided."}</p>
                       </div>
                       <span className="rounded-full bg-[#edf5ee] px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#267344]">
                         {listing.status}
                       </span>
                     </div>
 
+                    {listing.image_url ? (
+                      <img
+                        src={listing.image_url}
+                        alt={listing.title}
+                        className="mt-4 h-48 w-full rounded-[12px] object-cover"
+                      />
+                    ) : null}
+
                     <div className="mt-3 grid gap-3 text-sm text-[#58665d] sm:grid-cols-2">
                       <p>📍 {listing.location}</p>
                       <p>💰 Start: {formatCurrency(Number(listing.starting_price ?? 0))}</p>
                       <p>🗓 Ends: {formatDate(listing.ends_at)}</p>
                       <p>🛡 Reserve: {formatCurrency(Number(listing.reserve_price ?? 0))}</p>
+                      <p className="sm:col-span-2">🧰 Condition: {listing.item_condition ?? "Not stated"}</p>
                     </div>
                   </article>
                 ))}
@@ -215,24 +241,26 @@ export default async function AccountPage({
               </div>
             ) : (
               <div className="space-y-4">
-                {bids.map((bid) => (
-                  <article key={bid.id} className="rounded-[16px] border border-[#edf2ee] bg-[#f9fbf8] p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#64826d]">Auction</p>
-                        <h3 className="mt-1 text-lg font-bold text-[#173b2b]">
-                          {bid.auctions?.[0]?.title ?? "Auction"}
-                        </h3>
-                      </div>
-                      <span className="text-lg font-bold text-[#173b2b]">{formatCurrency(Number(bid.amount ?? 0))}</span>
-                    </div>
+                {bids.map((bid) => {
+                  const auctionDisplay = getAuctionDisplay(bid.auctions);
 
-                    <div className="mt-3 flex items-center justify-between gap-3 text-sm text-[#58665d]">
-                      <span>{bid.auctions?.[0]?.location ?? "Location"}</span>
-                      <span>{formatDate(bid.created_at)}</span>
-                    </div>
-                  </article>
-                ))}
+                  return (
+                    <article key={bid.id} className="rounded-[16px] border border-[#edf2ee] bg-[#f9fbf8] p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#64826d]">Auction</p>
+                          <h3 className="mt-1 text-lg font-bold text-[#173b2b]">{auctionDisplay.title}</h3>
+                        </div>
+                        <span className="text-lg font-bold text-[#173b2b]">{formatCurrency(Number(bid.amount ?? 0))}</span>
+                      </div>
+
+                      <div className="mt-3 flex items-center justify-between gap-3 text-sm text-[#58665d]">
+                        <span>{auctionDisplay.location}</span>
+                        <span>{formatDate(bid.created_at)}</span>
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             )}
           </section>
