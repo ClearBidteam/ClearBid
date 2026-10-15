@@ -17,7 +17,16 @@ create table if not exists public.auctions (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.bids (
+  id uuid primary key default gen_random_uuid(),
+  auction_id uuid not null references public.auctions (id) on delete cascade,
+  bidder_id uuid not null references auth.users (id) on delete cascade,
+  amount numeric(12, 2) not null check (amount > 0),
+  created_at timestamptz not null default now()
+);
+
 alter table public.auctions enable row level security;
+alter table public.bids enable row level security;
 
 create policy "Anyone can view auctions"
 on public.auctions for select
@@ -32,5 +41,19 @@ on public.auctions for update
 using (auth.uid() = seller_id)
 with check (auth.uid() = seller_id);
 
+create policy "Anyone can view bids"
+on public.bids for select
+using (true);
+
+create policy "Buyers can create bids"
+on public.bids for insert
+with check (auth.uid() = bidder_id);
+
+create policy "Users can see their own bids"
+on public.bids for select
+using (auth.uid() = bidder_id);
+
 create index if not exists auctions_seller_id_idx on public.auctions (seller_id);
 create index if not exists auctions_ends_at_idx on public.auctions (ends_at);
+create index if not exists bids_auction_id_idx on public.bids (auction_id);
+create index if not exists bids_bidder_id_idx on public.bids (bidder_id);
