@@ -6,17 +6,22 @@ import { redirect } from "next/navigation";
 import { parseBidAmount } from "@/lib/bid-validation";
 import { createClient } from "@/utils/supabase/server";
 
-export async function placeBid(formData: FormData) {
+type BidActionState = {
+  status: "idle" | "error" | "success";
+  message: string;
+};
+
+export async function placeBid(_previousState: BidActionState, formData: FormData): Promise<BidActionState> {
   const auctionId = String(formData.get("auctionId") ?? "");
   const invalidAuctionId = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(auctionId);
 
   if (invalidAuctionId) {
-    redirect("/?error=That+auction+could+not+be+found.");
+    return { status: "error", message: "That auction could not be found. Refresh the page and try again." };
   }
 
   const { amount, error: amountError } = parseBidAmount(formData.get("amount"));
   if (amountError || amount === null) {
-    redirect(`/auctions/${auctionId}?error=${encodeURIComponent(amountError)}`);
+    return { status: "error", message: amountError };
   }
 
   const supabase = await createClient();
@@ -41,11 +46,11 @@ export async function placeBid(formData: FormData) {
         : error.message.includes("not open for bidding")
           ? "This auction is no longer open for bidding."
           : "We could not place that bid. Refresh the auction and try again.";
-    redirect(`/auctions/${auctionId}?error=${encodeURIComponent(message)}`);
+        return { status: "error", message };
   }
 
   revalidatePath("/");
   revalidatePath(`/auctions/${auctionId}`);
   revalidatePath("/account");
-  redirect(`/auctions/${auctionId}?success=Your+bid+was+placed.`);
+  return { status: "success", message: "Your bid was placed." };
 }

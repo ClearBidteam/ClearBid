@@ -102,7 +102,7 @@ export default async function AccountPage({
               href="/"
               className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[#d9e6d8] bg-[#edf5ee] px-5 font-bold text-[#173b2b] transition-opacity hover:opacity-90"
             >
-              Browse auctions
+              Home dashboard
             </Link>
             <Link
               href="/listings/new"

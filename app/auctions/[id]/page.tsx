@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { placeBid } from "@/app/actions/bids";
+import BidForm from "@/app/auctions/[id]/bid-form";
 import { createClient } from "@/utils/supabase/server";
 
 function formatCurrency(value: number) {
@@ -104,24 +104,7 @@ export default async function AuctionPage({
             ) : isSeller ? (
               <p className="mt-5 rounded-md bg-[#f2f5f1] px-4 py-3 text-sm text-[#58665d]">You are the seller and cannot bid on this auction.</p>
             ) : user ? (
-              <form action={placeBid} className="mt-5 grid gap-3">
-                <input type="hidden" name="auctionId" value={auction.id} />
-                <label htmlFor="bid-amount" className="text-sm font-semibold text-[#29452f]">Your bid (EUR)</label>
-                <input
-                  id="bid-amount"
-                  name="amount"
-                  type="number"
-                  min={minimumBid.toFixed(2)}
-                  step="0.01"
-                  placeholder={minimumBid.toFixed(2)}
-                  required
-                  className="min-h-12 rounded-md border border-[#c5d7c8] px-3.5 focus:border-[#1d7a45] focus:outline-2 focus:outline-[#1d7a45]/20"
-                />
-                <p className="text-xs text-[#58665d]">Minimum next bid: {formatCurrency(minimumBid)}</p>
-                <button type="submit" className="mt-1 min-h-12 rounded-md bg-[#1d7a45] px-5 font-bold text-white transition-opacity hover:opacity-90">
-                  Place bid
-                </button>
-              </form>
+              <BidForm auctionId={auction.id} minimumBid={minimumBid} />
             ) : (
               <Link href={`/login?error=Please+log+in+to+place+a+bid.`} className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-md bg-[#1d7a45] px-5 font-bold text-white hover:opacity-90">
                 Log in to bid
