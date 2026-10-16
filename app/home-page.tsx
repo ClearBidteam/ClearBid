@@ -5,52 +5,19 @@ import Link from "next/link";
 
 import styles from "./home-page.module.css";
 
-const auctionPreviews = [
-  {
-    title: "House Clearance - Dundalk, Louth",
-    location: "Dundalk, Co. Louth",
-    category: "house",
-    county: "louth",
-    image: "https://images.unsplash.com/photo-1618220179428-22790b461013?auto=format&fit=crop&w=900&q=80",
-    imageAlt: "Living room furniture in a bright home",
-    countdown: "2d 4h",
-    bid: "€1,250",
-    bids: "12 sample bids",
-  },
-  {
-    title: "Garage Full of Tools - Cork City",
-    location: "Cork City, Co. Cork",
-    category: "garage",
-    county: "cork",
-    image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=900&q=80",
-    imageAlt: "Workshop tools arranged on a workbench",
-    countdown: "1d 6h",
-    bid: "€820",
-    bids: "8 sample bids",
-  },
-  {
-    title: "Shed & Garden Items - Galway",
-    location: "Oranmore, Co. Galway",
-    category: "garden",
-    county: "galway",
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=900&q=80",
-    imageAlt: "Green plants and garden supplies",
-    countdown: "3d 2h",
-    bid: "€480",
-    bids: "5 sample bids",
-  },
-  {
-    title: "Antiques & Collectables - Kildare",
-    location: "Naas, Co. Kildare",
-    category: "antiques",
-    county: "kildare",
-    image: "https://images.unsplash.com/photo-1577083552431-6e5fd01988a5?auto=format&fit=crop&w=900&q=80",
-    imageAlt: "Colorful antique artwork",
-    countdown: "5d 7h",
-    bid: "€1,600",
-    bids: "15 sample bids",
-  },
-];
+type AuctionPreview = {
+  id: string;
+  title: string;
+  short_description: string;
+  location: string;
+  category: string;
+  county: string;
+  image_url: string;
+  starting_price: number;
+  highest_bid: number | null;
+  bid_count: number;
+  ends_at: string;
+};
 
 const benefits = [
   { icon: "▣", title: "List in Minutes", text: "Upload photos, set a date and publish your auction." },
@@ -75,7 +42,7 @@ const categories = [
   { icon: "📦", label: "Collectables" },
 ];
 
-export default function HomePage() {
+export default function HomePage({ auctions }: { auctions: AuctionPreview[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [county, setCounty] = useState("");
@@ -83,7 +50,7 @@ export default function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const filteredAuctions = hasSearched
-    ? auctionPreviews.filter((auction) => {
+    ? auctions.filter((auction) => {
         const searchText = `${auction.title} ${auction.location}`.toLowerCase();
         return (
           searchText.includes(query.trim().toLowerCase()) &&
@@ -91,7 +58,7 @@ export default function HomePage() {
           (!county || auction.county === county)
         );
       })
-    : auctionPreviews;
+    : auctions;
 
   function searchAuctions(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -195,31 +162,46 @@ export default function HomePage() {
           <div className={styles.container}>
             <div className={styles.sectionHeadingRow}>
               <div className={styles.sectionHeading}>
-                <h2>Featured Auctions</h2>
-                <p>Example listings showing how local clearances will appear.</p>
+                <h2>Live Auctions</h2>
+                <p>Local clearances currently open for bidding.</p>
               </div>
-              <span className={styles.previewNotice}>Preview listings</span>
+              <span className={styles.previewNotice}>{filteredAuctions.length} open</span>
             </div>
             <div className={styles.auctionGrid}>
-              {filteredAuctions.map((auction) => (
-                <article className={styles.auctionCard} key={auction.title}>
-                  <div className={styles.auctionImage}>
-                    <img src={auction.image} alt={auction.imageAlt} />
-                    <span className={styles.countdown}>Example · {auction.countdown}</span>
-                  </div>
-                  <div className={styles.auctionCardContent}>
-                    <h3>{auction.title}</h3>
-                    <p className={styles.auctionLocation}>⌖ {auction.location}</p>
-                    <div className={styles.auctionMeta}>
-                      <div><span className={styles.bidLabel}>Sample bid</span><span className={styles.bidPrice}>{auction.bid}</span></div>
-                      <span className={styles.bidCount}>{auction.bids}</span>
-                    </div>
-                  </div>
-                </article>
-              ))}
+              {filteredAuctions.map((auction) => {
+                const currentBid = auction.highest_bid ?? auction.starting_price;
+                const endsIn = Math.max(0, new Date(auction.ends_at).getTime() - Date.now());
+                const daysLeft = Math.floor(endsIn / 86400000);
+                const hoursLeft = Math.floor((endsIn % 86400000) / 3600000);
+
+                return (
+                  <article className={styles.auctionCard} key={auction.id}>
+                    <Link className={styles.auctionCardLink} href={`/auctions/${auction.id}`}>
+                      <div className={styles.auctionImage}>
+                        <img src={auction.image_url} alt={auction.title} />
+                        <span className={styles.countdown}>{daysLeft ? `${daysLeft}d ` : ""}{hoursLeft}h left</span>
+                      </div>
+                      <div className={styles.auctionCardContent}>
+                        <h3>{auction.title}</h3>
+                        <p className={styles.auctionLocation}>{auction.location}, Co. {auction.county}</p>
+                        <p className={styles.auctionDescription}>{auction.short_description}</p>
+                        <div className={styles.auctionMeta}>
+                          <div>
+                            <span className={styles.bidLabel}>{auction.highest_bid ? "Current bid" : "Starting bid"}</span>
+                            <span className={styles.bidPrice}>{new Intl.NumberFormat("en-IE", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(currentBid)}</span>
+                          </div>
+                          <span className={styles.bidCount}>{auction.bid_count} {auction.bid_count === 1 ? "bid" : "bids"}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  </article>
+                );
+              })}
             </div>
             {filteredAuctions.length === 0 && (
-              <p className={styles.emptyResults} role="status">No example listings match those filters. Try a different search.</p>
+              <p className={styles.emptyResults} role="status">
+                {auctions.length ? "No live auctions match those filters. Try another search." : "There are no live auctions yet. Check back soon or list a clearance of your own."}
+              </p>
             )}
           </div>
         </section>

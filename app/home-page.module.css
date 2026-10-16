@@ -416,6 +416,18 @@
   transform: translateY(-4px);
 }
 
+.auctionCardLink {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.auctionCardLink:focus-visible {
+  outline: 3px solid var(--green);
+  outline-offset: 3px;
+}
+
 .auctionImage {
   position: relative;
   height: 190px;
@@ -458,6 +470,18 @@
   font-family: Poppins, "Trebuchet MS", sans-serif;
   font-size: 0.98rem;
   line-height: 1.4;
+}
+
+.auctionDescription {
+  display: -webkit-box;
+  min-height: 2.8em;
+  margin: 10px 0 0;
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .auctionLocation {

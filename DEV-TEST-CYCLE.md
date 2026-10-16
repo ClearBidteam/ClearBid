@@ -50,9 +50,20 @@ Use this checklist when making and checking changes to ClearBid locally.
    npm run build
    ```
 
-   Fix any errors introduced by your change and run the build again. This project
-   currently has no automated test script, so the browser checks above are
-   manual.
+   Fix any errors introduced by your change and run the build again.
+6. Run the automated validation tests:
+
+   ```bash
+   npm test
+   ```
+
+## Listing and bidding setup
+
+Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL Editor
+before testing listing uploads or bids. The script sets up auctions, bid
+privacy and policies, storage, public bid summaries, and atomic bid placement.
+Then verify the buyer/seller flows using two accounts, including expired
+auctions, seller self-bids, competing bids, and bid visibility.
 
 ## Troubleshooting
 

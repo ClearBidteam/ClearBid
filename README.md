@@ -5,7 +5,9 @@ clear your clutter let buyers compete
 ## Current status
 
 Email/password signup and login use Supabase Auth. Confirmed users can access a
-protected account page at `/account`; Supabase Auth stores the account records.
+protected account page at `/account`. Sellers can create auctions with photos;
+buyers can browse active auctions and place bids. Bid totals are public, while
+bidder identities are visible only to the bidder and the auction's seller.
 
 ## Local development
 
@@ -26,6 +28,12 @@ For local auth, configure Supabase with:
 
 Email confirmation must be enabled and configured for the project to send signup emails.
 
+Before testing listings and bidding, run [`supabase/schema.sql`](supabase/schema.sql)
+in the Supabase SQL Editor. It creates the auction and bid tables, row-level
+security policies, the listing image bucket and upload policy, and the database
+functions used to display bid summaries and accept bids atomically. Check your
+project's Data API settings if these tables are not exposed to the app.
+
 ## Production deployment
 
 Set these environment variables in your hosting provider before deploying:
@@ -45,7 +53,10 @@ For Vercel deployments, `NEXT_PUBLIC_SITE_URL` is the most reliable option; the 
 
 ## Next steps
 
-- Add profile fields in a public table only when the product needs them; Auth
-	user records are already managed by Supabase.
-- Define listing and bid tables with Row Level Security policies.
+- Apply and verify `supabase/schema.sql` in the target Supabase project.
+- Test signup, image uploads, listing creation, browsing, and bidding with two
+	separate accounts; confirm users cannot see other bidders' identities or bid
+	on their own auctions.
 - Configure custom SMTP before relying on signup email delivery in production.
+- Add payment, winner notification, buyer/seller contact, and collection flows
+	before treating auction completion as a real transaction.

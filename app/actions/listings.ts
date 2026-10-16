@@ -8,6 +8,15 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function createListing(formData: FormData) {
   const imageFile = formData.get("image");
+  if (!(imageFile instanceof File) || imageFile.size === 0) {
+    redirect("/listings/new?error=Please+upload+a+listing+photo.");
+  }
+
+  const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+  if (!allowedImageTypes.has(imageFile.type) || imageFile.size > 5 * 1024 * 1024) {
+    redirect("/listings/new?error=Upload+a+JPEG,+PNG,+WebP,+or+GIF+image+under+5+MB.");
+  }
+
   const payload = {
     title: String(formData.get("title") ?? ""),
     description: String(formData.get("description") ?? ""),
@@ -19,7 +28,7 @@ export async function createListing(formData: FormData) {
     startPrice: String(formData.get("startPrice") ?? ""),
     reservePrice: String(formData.get("reservePrice") ?? ""),
     endsAt: String(formData.get("endsAt") ?? ""),
-    imageUrl: "",
+    imageUrl: "pending-upload",
   };
 
   const { values, errors } = validateListingInput(payload);
@@ -38,32 +47,26 @@ export async function createListing(formData: FormData) {
     redirect("/login?error=Please+log+in+to+list+an+auction.");
   }
 
-  let imageUrl = "";
+  const extensionByType: Record<string, string> = {
+    "image/jpeg": "jpg",
+    "image/png": "png",
+    "image/webp": "webp",
+    "image/gif": "gif",
+  };
+  const uploadPath = `${user.id}/${crypto.randomUUID()}.${extensionByType[imageFile.type]}`;
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from("listing-images")
+    .upload(uploadPath, imageFile, { contentType: imageFile.type });
 
-  if (imageFile instanceof File && imageFile.size > 0) {
-    const safeFileName = `${Date.now()}-${imageFile.name.replace(/\s+/g, "-")}`;
-    const uploadPath = `${user.id}/${safeFileName}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("listing-images")
-      .upload(uploadPath, imageFile, {
-        upsert: true,
-        contentType: imageFile.type || "application/octet-stream",
-      });
-
-    if (uploadError) {
-      const message = uploadError.message.includes("not found")
-        ? "Create a public 'listing-images' bucket in Supabase Storage before uploading photos."
-        : uploadError.message;
-      redirect(`/listings/new?error=${encodeURIComponent(message)}`);
-    }
-
-    const { data: publicUrlData } = supabase.storage.from("listing-images").getPublicUrl(uploadData.path);
-    imageUrl = publicUrlData.publicUrl;
+  if (uploadError) {
+    const message = uploadError.message.includes("not found")
+      ? "Create the 'listing-images' bucket in Supabase Storage before uploading photos."
+      : uploadError.message;
+    redirect(`/listings/new?error=${encodeURIComponent(message)}`);
   }
 
-  if (!imageUrl) {
-    redirect("/listings/new?error=Please+upload+a+listing+photo.");
-  }
+  const { data: publicUrlData } = supabase.storage.from("listing-images").getPublicUrl(uploadData.path);
+  const imageUrl = publicUrlData.publicUrl;
 
   const { error } = await supabase.from("auctions").insert({
     seller_id: user.id,

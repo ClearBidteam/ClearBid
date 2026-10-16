@@ -10,7 +10,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "node --test lib/*.test.mjs"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
