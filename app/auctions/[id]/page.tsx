@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import BidForm from "@/app/auctions/[id]/bid-form";
+import { getHighestBid, getMinimumBid } from "@/lib/bid-display";
 import { createClient } from "@/utils/supabase/server";
 
 function formatCurrency(value: number) {
@@ -49,14 +50,15 @@ export default async function AuctionPage({
   }
 
   const summary = ((summaries ?? []) as AuctionBidSummary[]).find((item) => item.auction_id === auction.id);
-  const highestBid = summary?.highest_bid ? Number(summary.highest_bid) : null;
+  const highestBid = getHighestBid(summary ?? null);
   const bidCount = Number(summary?.bid_count ?? 0);
   const user = authData.user;
   const isOpen = auction.status === "active" && new Date(auction.starts_at) <= new Date() && new Date(auction.ends_at) > new Date();
   const isSeller = user?.id === auction.seller_id;
-  const minimumBid = highestBid === null
-    ? Number(auction.starting_price)
-    : Math.max(Number(auction.starting_price), highestBid + 0.01);
+  const minimumBid = getMinimumBid({
+    starting_price: auction.starting_price,
+    highest_bid: highestBid,
+  }) ?? Number(auction.starting_price);
 
   return (
     <main className="min-h-screen bg-[#f2f5f1] px-4 py-8 text-[#182522] sm:px-6">
