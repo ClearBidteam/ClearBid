@@ -20,6 +20,25 @@ create table if not exists public.auctions (
   updated_at timestamptz not null default now()
 );
 
+alter table public.auctions
+  add column if not exists id uuid default gen_random_uuid(),
+  add column if not exists seller_id uuid references auth.users (id) on delete cascade,
+  add column if not exists title text,
+  add column if not exists description text,
+  add column if not exists short_description text,
+  add column if not exists item_condition text,
+  add column if not exists category text,
+  add column if not exists county text,
+  add column if not exists location text,
+  add column if not exists image_url text,
+  add column if not exists starting_price numeric(12, 2),
+  add column if not exists reserve_price numeric(12, 2),
+  add column if not exists starts_at timestamptz default now(),
+  add column if not exists ends_at timestamptz,
+  add column if not exists status text default 'active',
+  add column if not exists created_at timestamptz default now(),
+  add column if not exists updated_at timestamptz default now();
+
 create table if not exists public.bids (
   id uuid primary key default gen_random_uuid(),
   auction_id uuid not null references public.auctions (id) on delete cascade,
@@ -27,6 +46,13 @@ create table if not exists public.bids (
   amount numeric(12, 2) not null check (amount > 0),
   created_at timestamptz not null default now()
 );
+
+alter table public.bids
+  add column if not exists id uuid default gen_random_uuid(),
+  add column if not exists auction_id uuid references public.auctions (id) on delete cascade,
+  add column if not exists bidder_id uuid references auth.users (id) on delete cascade,
+  add column if not exists amount numeric(12, 2),
+  add column if not exists created_at timestamptz default now();
 
 alter table public.auctions enable row level security;
 alter table public.bids enable row level security;
@@ -93,6 +119,7 @@ returns uuid
 language plpgsql
 security definer
 set search_path = ''
+as $$
 
 declare
   current_user_id uuid := auth.uid();

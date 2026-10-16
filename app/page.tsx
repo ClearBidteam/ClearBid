@@ -13,7 +13,7 @@ export default async function Page() {
   const [{ data: auctionData }, { data: bidSummaryData }] = await Promise.all([
     supabase
       .from("auctions")
-      .select("id, title, short_description, category, county, location, image_url, starting_price, ends_at")
+      .select("id, title, description, short_description, category, county, location, image_url, starting_price, ends_at")
       .eq("status", "active")
       .lte("starts_at", now)
       .gt("ends_at", now)
@@ -27,6 +27,7 @@ export default async function Page() {
   );
   const auctions = (auctionData ?? []).map((auction) => ({
     ...auction,
+    short_description: auction.short_description ?? auction.description,
     highest_bid: bidSummaries.get(auction.id)?.highest_bid ?? null,
     bid_count: bidSummaries.get(auction.id)?.bid_count ?? 0,
   }));

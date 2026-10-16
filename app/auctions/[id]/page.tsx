@@ -82,7 +82,7 @@ export default async function AuctionPage({
               <img src={auction.image_url} alt={auction.title} className="aspect-[4/3] max-h-[620px] w-full object-cover" />
             </div>
             <div className="mt-7">
-              <p className="text-xs font-bold uppercase text-[#267344]">{auction.category} · {auction.item_condition.replaceAll("_", " ")}</p>
+              <p className="text-xs font-bold uppercase text-[#267344]">{auction.category} · {auction.item_condition?.replaceAll("_", " ") ?? "condition not specified"}</p>
               <h1 className="mt-2 text-3xl font-bold leading-tight text-[#173b2b] sm:text-4xl">{auction.title}</h1>
               <p className="mt-3 text-[#58665d]">{auction.location}, Co. {auction.county}</p>
               <p className="mt-6 whitespace-pre-wrap leading-7 text-[#35453b]">{auction.description}</p>
