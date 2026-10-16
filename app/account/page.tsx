@@ -99,6 +99,12 @@ export default async function AccountPage({
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link
+              href="/"
+              className="inline-flex min-h-12 items-center justify-center rounded-[10px] border border-[#d9e6d8] bg-[#edf5ee] px-5 font-bold text-[#173b2b] transition-opacity hover:opacity-90"
+            >
+              Browse auctions
+            </Link>
+            <Link
               href="/listings/new"
               className="inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[#1d7a45] px-5 font-bold text-white transition-opacity hover:opacity-90"
             >
@@ -198,7 +204,11 @@ export default async function AccountPage({
                         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#64826d]">
                           {listing.category}
                         </p>
-                        <h3 className="mt-1 text-xl font-bold text-[#173b2b]">{listing.title}</h3>
+                        <h3 className="mt-1 text-xl font-bold text-[#173b2b]">
+                          <Link href={`/auctions/${listing.id}`} className="hover:underline">
+                            {listing.title}
+                          </Link>
+                        </h3>
                         <p className="mt-2 text-sm text-[#58665d]">{listing.short_description ?? "No summary provided."}</p>
                       </div>
                       <span className="rounded-full bg-[#edf5ee] px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-[#267344]">
@@ -249,7 +259,11 @@ export default async function AccountPage({
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#64826d]">Auction</p>
-                          <h3 className="mt-1 text-lg font-bold text-[#173b2b]">{auctionDisplay.title}</h3>
+                            <h3 className="mt-1 text-lg font-bold text-[#173b2b]">
+                              <Link href={`/auctions/${bid.auction_id}`} className="hover:underline">
+                                {auctionDisplay.title}
+                              </Link>
+                            </h3>
                         </div>
                         <span className="text-lg font-bold text-[#173b2b]">{formatCurrency(Number(bid.amount ?? 0))}</span>
                       </div>
