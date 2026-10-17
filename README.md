@@ -5,9 +5,10 @@ clear your clutter let buyers compete
 ## Current status
 
 Email/password signup and login use Supabase Auth. Confirmed users can access a
-protected account page at `/account`. Sellers can create auctions with photos;
-buyers can browse active auctions and place bids. Bid totals are public, while
-bidder identities are visible only to the bidder and the auction's seller.
+protected account page at `/account`. Sellers can create auction listings with
+photos, buyers can browse active auctions and place bids, and sellers can confirm
+collection after a sale. Bid totals are public, while bidder identities are
+visible only to the bidder and the auction's seller.
 
 ## Local development
 
@@ -55,8 +56,8 @@ For Vercel deployments, `NEXT_PUBLIC_SITE_URL` is the most reliable option; the 
 
 - Apply and verify `supabase/schema.sql` in the target Supabase project.
 - Test signup, image uploads, listing creation, browsing, and bidding with two
-	separate accounts; confirm users cannot see other bidders' identities or bid
-	on their own auctions.
+  separate accounts; confirm users cannot see other bidders' identities or bid on
+  their own auctions.
 - Configure custom SMTP before relying on signup email delivery in production.
-- Add payment, winner notification, buyer/seller contact, and collection flows
-	before treating auction completion as a real transaction.
+- Add payment, winner notification, and a more formal buyer/seller handoff flow
+  before treating auction completion as a full marketplace transaction.

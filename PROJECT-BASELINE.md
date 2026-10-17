@@ -7,10 +7,11 @@
 ## 1. What this project is
 
 ClearBid is an **online auction platform for household and garage clearances**
-("clear your clutter, let buyers compete"). It is an early-stage product: the
-only functionality implemented so far is **user authentication** (email/password
-signup, login, email confirmation, and a protected account page). Listings,
-bidding, and auction logic do not exist yet.
+("clear your clutter, let buyers compete"). The product already includes
+**user authentication**, **seller profile management**, **auction listing
+creation**, **live bidding**, **auction summaries**, and **post-sale collection
+confirmation**. It is still an early-stage marketplace, but the core auction flow
+is implemented.
 
 ## 2. Tech stack
 
@@ -133,12 +134,13 @@ Key points for any change:
 
 ## 9. Current gaps / planned next steps (from README)
 
-- No profile table yet — Supabase Auth records hold user data for now; add a
-  public profile table only when the product needs extra fields.
-- **Listing and bid tables are not implemented.** They should be added with
-  Supabase Row Level Security (RLS) policies.
+- `seller_profiles`, `auctions`, `bids`, and `seller_reviews` are implemented
+  with Supabase RLS policies and supporting database functions.
 - Custom SMTP must be configured before relying on signup email in production.
-- No home/marketing page — `/` only redirects based on auth state.
+- Payment, winner notifications, and a fuller collection/checkout workflow are
+  still required before treating the marketplace as a complete transactional app.
+- The home page still acts mainly as a redirect/entry point rather than a full
+  marketing landing page.
 
 ## 10. Quick orientation for an AI agent
 
