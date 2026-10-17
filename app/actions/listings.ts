@@ -55,6 +55,11 @@ export async function createListing(formData: FormData) {
     redirect("/login?error=Please+log+in+to+list+an+auction.");
   }
 
+  const { count: existingListingCount, error: listingCountError } = await supabase
+    .from("auctions")
+    .select("id", { count: "exact", head: true })
+    .eq("seller_id", user.id);
+
   const extensionByType: Record<string, string> = {
     "image/jpeg": "jpg",
     "image/png": "png",
@@ -108,5 +113,16 @@ export async function createListing(formData: FormData) {
   }
 
   revalidatePath("/account", "layout");
-  redirect("/account?success=Auction+created+successfully.");
+  const creationType = !listingCountError && existingListingCount === 0 ? "first" : "another";
+  redirect(`/account?created=${creationType}#your-listings`);
+}
+
+export async function recordAuctionView(auctionId: string) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(auctionId)) {
+    return;
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("record_auction_view", { p_auction_id: auctionId });
+  if (!error) revalidatePath("/account");
 }

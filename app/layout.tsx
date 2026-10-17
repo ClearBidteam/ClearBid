@@ -27,7 +27,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       </head>
       <body className="min-h-screen bg-[linear-gradient(145deg,#f3f6f1_0%,#e7efe5_100%)] font-[Arial,Helvetica,sans-serif] text-[#182522]">
         <SiteNavigation displayName={displayName} />
-        <div className="pb-16 lg:pl-56 lg:pb-0">{children}</div>
+        <div className="pt-11 lg:pl-56 lg:pt-0">{children}</div>
       </body>
     </html>
   );

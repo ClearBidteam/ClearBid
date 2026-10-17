@@ -17,6 +17,7 @@ create table if not exists public.auctions (
   starts_at timestamptz not null default now(),
   ends_at timestamptz not null,
   status text not null default 'active' check (status in ('draft', 'active', 'closed')),
+  view_count bigint not null default 0 check (view_count >= 0),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -41,6 +42,7 @@ alter table public.auctions
   add column if not exists starts_at timestamptz default now(),
   add column if not exists ends_at timestamptz,
   add column if not exists status text default 'active',
+  add column if not exists view_count bigint not null default 0,
   add column if not exists created_at timestamptz default now(),
   add column if not exists updated_at timestamptz default now();
 
@@ -198,6 +200,21 @@ create policy "Sellers can update their auctions"
 on public.auctions for update to authenticated
 using ((select auth.uid()) = seller_id)
 with check ((select auth.uid()) = seller_id);
+
+create or replace function public.record_auction_view(p_auction_id uuid)
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  update public.auctions
+  set view_count = view_count + 1
+  where id = p_auction_id
+    and status = 'active';
+$$;
+
+revoke all on function public.record_auction_view(uuid) from public;
+grant execute on function public.record_auction_view(uuid) to anon, authenticated;
 
 create policy "Users can see their own bids"
 on public.bids for select to authenticated

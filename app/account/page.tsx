@@ -34,11 +34,12 @@ function formatDate(value: string | null | undefined) {
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ success?: string; error?: string }>;
+  searchParams?: Promise<{ success?: string; error?: string; created?: string }>;
 }) {
   const params = (await searchParams) ?? {};
   const successMessage = params.success ?? "";
   const errorMessage = params.error ?? "";
+  const createdMessage = params.created ?? "";
 
   const supabase = await createClient();
   const {
@@ -77,11 +78,18 @@ export default async function AccountPage({
   const { data: listingBidsData, error: listingBidsError } = listingIds.length
     ? await supabase.from("bids").select("auction_id, amount").in("auction_id", listingIds)
     : { data: [], error: null };
+  const { data: listingViewsData } = listingIds.length
+    ? await supabase.from("auctions").select("id, view_count").in("id", listingIds)
+    : { data: [] };
+
+  const viewCountByAuction = new Map<string, number>((listingViewsData ?? []).map((listing) => [listing.id, Number(listing.view_count ?? 0)]));
 
   const highestBidByAuction = new Map<string, number>();
+  const bidCountByAuction = new Map<string, number>();
   for (const bid of listingBidsError ? [] : listingBidsData ?? []) {
     const auctionId = String(bid.auction_id);
     const amount = Number(bid.amount ?? 0);
+    bidCountByAuction.set(auctionId, (bidCountByAuction.get(auctionId) ?? 0) + 1);
     const prev = highestBidByAuction.get(auctionId) ?? 0;
     if (amount > prev) {
       highestBidByAuction.set(auctionId, amount);
@@ -235,13 +243,26 @@ export default async function AccountPage({
         </div>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-2">
-          <section className="rounded-[24px] border border-[#d9e6d8] bg-white/90 p-5 shadow-[0_18px_42px_rgba(23,59,43,0.11)] sm:p-6">
+          <section id="your-listings" className="scroll-mt-14 rounded-[24px] border border-[#d9e6d8] bg-white/90 p-5 shadow-[0_18px_42px_rgba(23,59,43,0.11)] sm:p-6">
             <div className="mb-5 flex items-center justify-between gap-3">
               <h2 className="text-2xl font-bold text-[#173b2b]">Your listings</h2>
               <Link href="/listings/new" className="text-sm font-semibold text-[#1d7a45] hover:underline">
                 New listing
               </Link>
             </div>
+
+            {createdMessage ? (
+              <div role="status" className="mb-5 border-l-4 border-[#1d7a45] bg-[#eefaf1] px-5 py-4 text-[#1f5d39] sm:px-6 sm:py-5">
+                <p className="text-xl font-bold sm:text-2xl">
+                  {createdMessage === "first" ? "Congratulations, you have created your first auction!" : "Auction created successfully."}
+                </p>
+                <p className="mt-2 text-base">
+                  {createdMessage === "first"
+                    ? "Your first listing is live. You can see it below with your other auctions."
+                    : "Your new listing is live and ready to view below."}
+                </p>
+              </div>
+            ) : null}
 
             {listings.length === 0 ? (
               <div className="rounded-[16px] border border-dashed border-[#c5d7c8] bg-[#f9fbf8] p-6 text-center text-[#58665d]">
@@ -250,7 +271,7 @@ export default async function AccountPage({
             ) : (
               <div className="space-y-4">
                 {listings.map((listing) => (
-                  <article key={listing.id} className="rounded-[16px] border border-[#edf2ee] bg-[#f9fbf8] p-4">
+                  <article id={`listing-${listing.id}`} key={listing.id} className="scroll-mt-14 rounded-[16px] border border-[#edf2ee] bg-[#f9fbf8] p-4">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="flex-1">
                         <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#64826d]">
@@ -283,6 +304,14 @@ export default async function AccountPage({
                       <p>🛡 Reserve: {formatCurrency(Number(listing.reserve_price ?? 0))}</p>
                       <p className="sm:col-span-2">🧰 Condition: {listing.item_condition ?? "Not stated"}</p>
                     </div>
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-[#e4eae4] pt-3">
+                      <p className="text-sm font-semibold text-[#29452f]">
+                        {bidCountByAuction.get(listing.id) ?? 0} bids · {viewCountByAuction.get(listing.id) ?? 0} views
+                      </p>
+                      <Link href={`/auctions/${listing.id}`} className="inline-flex min-h-10 items-center justify-center rounded-md bg-[#1d7a45] px-4 text-sm font-bold text-white hover:opacity-90">
+                        View auction
+                      </Link>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -307,15 +336,11 @@ export default async function AccountPage({
                   const auctionDisplay = getAuctionDisplay(bid.auctions);
 
                   return (
-                    <article key={bid.id} className="rounded-[16px] border border-[#edf2ee] bg-[#f9fbf8] p-4">
+                    <Link key={bid.id} href={`/auctions/${bid.auction_id}`} className="block rounded-[16px] border border-[#edf2ee] bg-[#f9fbf8] p-4 transition-colors hover:border-[#9cbea4] hover:bg-[#f2f7f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1d7a45]">
                       <div className="flex items-start justify-between gap-3">
                         <div>
                           <p className="text-sm font-semibold uppercase tracking-[0.08em] text-[#64826d]">Auction</p>
-                            <h3 className="mt-1 text-lg font-bold text-[#173b2b]">
-                              <Link href={`/auctions/${bid.auction_id}`} className="hover:underline">
-                                {auctionDisplay.title}
-                              </Link>
-                            </h3>
+                            <h3 className="mt-1 text-lg font-bold text-[#173b2b]">{auctionDisplay.title}</h3>
                         </div>
                         <span className="text-lg font-bold text-[#173b2b]">{formatCurrency(Number(bid.amount ?? 0))}</span>
                       </div>
@@ -324,7 +349,7 @@ export default async function AccountPage({
                         <span>{auctionDisplay.location}</span>
                         <span>{formatDate(bid.created_at)}</span>
                       </div>
-                    </article>
+                    </Link>
                   );
                 })}
               </div>

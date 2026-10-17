@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { confirmCollection } from "@/app/actions/seller-profile";
 import BidForm from "@/app/auctions/[id]/bid-form";
+import AuctionViewTracker from "@/app/auctions/[id]/view-tracker";
 import { getHighestBid, getMinimumBid } from "@/lib/bid-display";
 import { createClient } from "@/utils/supabase/server";
 
@@ -73,6 +74,7 @@ export default async function AuctionPage({
   return (
     <main className="min-h-screen bg-[#f2f5f1] px-4 py-8 text-[#182522] sm:px-6">
       <div className="mx-auto max-w-6xl">
+        <AuctionViewTracker auctionId={auction.id} />
         <Link href="/" className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#245d3d] hover:underline">
           <span aria-hidden="true">←</span> Browse auctions
         </Link>
