@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { confirmCollection } from "@/app/actions/seller-profile";
 import BidForm from "@/app/auctions/[id]/bid-form";
 import { getHighestBid, getMinimumBid } from "@/lib/bid-display";
 import { createClient } from "@/utils/supabase/server";
@@ -49,10 +50,19 @@ export default async function AuctionPage({
     notFound();
   }
 
+  const { data: galleryData } = await supabase.from("auctions").select("image_urls").eq("id", auction.id).maybeSingle();
   const summary = ((summaries ?? []) as AuctionBidSummary[]).find((item) => item.auction_id === auction.id);
+  const imageUrls = Array.from(new Set([auction.image_url, ...(galleryData?.image_urls ?? [])].filter(Boolean)));
   const highestBid = getHighestBid(summary ?? null);
   const bidCount = Number(summary?.bid_count ?? 0);
   const user = authData.user;
+  const [{ data: sellerProfile }, { data: collectionStatusData }] = await Promise.all([
+    supabase.from("seller_profiles").select("display_name").eq("user_id", auction.seller_id).maybeSingle(),
+    user
+      ? supabase.rpc("get_auction_collection_status", { p_auction_id: auction.id })
+      : Promise.resolve({ data: null, error: null }),
+  ]);
+  const collectionStatus = Array.isArray(collectionStatusData) ? collectionStatusData[0] : null;
   const isOpen = auction.status === "active" && new Date(auction.starts_at) <= new Date() && new Date(auction.ends_at) > new Date();
   const isSeller = user?.id === auction.seller_id;
   const minimumBid = getMinimumBid({
@@ -80,13 +90,21 @@ export default async function AuctionPage({
 
         <div className="mt-5 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)]">
           <section>
-            <div className="overflow-hidden rounded-lg bg-[#dce4dc]">
-              <img src={auction.image_url} alt={auction.title} className="aspect-[4/3] max-h-[620px] w-full object-cover" />
+            <div className="grid gap-3 sm:grid-cols-2">
+              {imageUrls.map((imageUrl, index) => (
+                <img
+                  key={imageUrl}
+                  src={imageUrl}
+                  alt={`${auction.title}, photo ${index + 1}`}
+                  className={`aspect-[4/3] max-h-[620px] w-full rounded-lg bg-[#dce4dc] object-cover ${index === 0 ? "sm:col-span-2" : ""}`}
+                />
+              ))}
             </div>
             <div className="mt-7">
               <p className="text-xs font-bold uppercase text-[#267344]">{auction.category} · {auction.item_condition?.replaceAll("_", " ") ?? "condition not specified"}</p>
               <h1 className="mt-2 text-3xl font-bold leading-tight text-[#173b2b] sm:text-4xl">{auction.title}</h1>
               <p className="mt-3 text-[#58665d]">{auction.location}, Co. {auction.county}</p>
+              <p className="mt-2 text-sm text-[#58665d]">Seller: <Link href={`/sellers/${auction.seller_id}`} className="font-semibold text-[#1d7a45] hover:underline">{sellerProfile?.display_name || "View seller profile"}</Link></p>
               <p className="mt-6 whitespace-pre-wrap leading-7 text-[#35453b]">{auction.description}</p>
             </div>
           </section>
@@ -100,6 +118,23 @@ export default async function AuctionPage({
               <div className="flex justify-between gap-4"><dt className="text-[#58665d]">Auction ends</dt><dd className="text-right font-semibold">{formatDate(auction.ends_at)}</dd></div>
               <div className="flex justify-between gap-4"><dt className="text-[#58665d]">Collection area</dt><dd className="text-right font-semibold">{auction.location}, {auction.county}</dd></div>
             </dl>
+
+            {user && !isOpen && collectionStatus?.is_participant ? (
+              <div className="mt-5 rounded-md bg-[#f2f5f1] p-4">
+                <p className="font-semibold text-[#29452f]">Collection confirmation</p>
+                <p className="mt-1 text-sm text-[#58665d]">
+                  Seller: {collectionStatus.seller_confirmed ? "confirmed" : "waiting"} · Winning buyer: {collectionStatus.buyer_confirmed ? "confirmed" : "waiting"}
+                </p>
+                {collectionStatus.completed_at ? (
+                  <p className="mt-2 text-sm font-semibold text-[#1d7a45]">Collection confirmed by both sides.</p>
+                ) : (user.id === auction.seller_id ? !collectionStatus.seller_confirmed : !collectionStatus.buyer_confirmed) ? (
+                  <form action={confirmCollection} className="mt-3">
+                    <input type="hidden" name="auctionId" value={auction.id} />
+                    <button type="submit" className="min-h-10 rounded-md bg-[#1d7a45] px-4 text-sm font-bold text-white">Confirm collection</button>
+                  </form>
+                ) : null}
+              </div>
+            ) : null}
 
             {!isOpen ? (
               <p className="mt-5 rounded-md bg-[#f2f5f1] px-4 py-3 text-sm font-semibold text-[#58665d]">This auction is not open for bidding.</p>

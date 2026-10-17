@@ -39,6 +39,7 @@ export async function placeBid(_previousState: BidActionState, formData: FormDat
   });
 
   if (error) {
+    console.error("place_auction_bid failed", { code: error.code, message: error.message });
     const message = error.message.includes("own auction")
       ? "You cannot bid on your own auction."
       : error.message.includes("higher than the current bid")

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { createListing } from "@/app/actions/listings";
+import { IRISH_COUNTIES } from "@/lib/counties";
 import { createClient } from "@/utils/supabase/server";
 
 function formatMinDateTime() {
@@ -106,12 +107,13 @@ export default async function NewListingPage({
             </label>
 
             <label className="flex flex-col gap-2 font-semibold text-[#29452f]">
-              <span>Listing photo</span>
+              <span>Listing photos (up to 5)</span>
               <input
                 className="min-h-12 w-full rounded-[10px] border border-[#c5d7c8] bg-[#f9fbf8] px-3.5 py-2 font-[inherit] file:mr-3 file:rounded-full file:border-0 file:bg-[#edf5ee] file:px-3 file:py-1 file:font-semibold file:text-[#173b2b] focus:border-[#1d7a45] focus:outline-2 focus:outline-[#1d7a45]/20"
-                name="image"
+                name="images"
                 type="file"
                 accept="image/*"
+                multiple
                 required
               />
             </label>
@@ -137,10 +139,9 @@ export default async function NewListingPage({
                 required
               >
                 <option value="" disabled>Select county</option>
-                <option value="galway">Galway</option>
-                <option value="cork">Cork</option>
-                <option value="louth">Louth</option>
-                <option value="kildare">Kildare</option>
+                {IRISH_COUNTIES.map((name) => (
+                  <option value={name.toLowerCase()} key={name}>{name}</option>
+                ))}
               </select>
             </label>
 

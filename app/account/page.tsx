@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { signOut } from "@/app/actions/auth";
+import { updateSellerProfile } from "@/app/actions/seller-profile";
+import { IRISH_COUNTIES } from "@/lib/counties";
 import { getAuctionDisplay } from "@/lib/bid-display";
 import { createClient } from "@/utils/supabase/server";
 
@@ -32,10 +34,11 @@ function formatDate(value: string | null | undefined) {
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ success?: string }>;
+  searchParams?: Promise<{ success?: string; error?: string }>;
 }) {
   const params = (await searchParams) ?? {};
   const successMessage = params.success ?? "";
+  const errorMessage = params.error ?? "";
 
   const supabase = await createClient();
   const {
@@ -54,10 +57,10 @@ export default async function AccountPage({
     [firstName, lastName].filter(Boolean).join(" ") ||
     "ClearBid member";
 
-  const [{ data: listingsData, error: listingsError }, { data: bidsData, error: bidsError }] = await Promise.all([
+  const [{ data: listingsData, error: listingsError }, { data: bidsData, error: bidsError }, { data: sellerProfile }] = await Promise.all([
     supabase
       .from("auctions")
-      .select("id, title, location, category, status, starts_at, ends_at, starting_price, reserve_price, created_at, short_description, item_condition, image_url")
+      .select("id, title, location, category, status, starts_at, ends_at, starting_price, reserve_price, created_at, short_description, item_condition, image_url, completed_at")
       .eq("seller_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -65,6 +68,7 @@ export default async function AccountPage({
       .select("id, amount, created_at, auction_id, auctions(title, location)")
       .eq("bidder_id", user.id)
       .order("created_at", { ascending: false }),
+    supabase.from("seller_profiles").select("display_name, bio, county, town, avatar_url, contact_email, contact_phone").eq("user_id", user.id).maybeSingle(),
   ]);
 
   const listings = listingsError ? [] : listingsData ?? [];
@@ -86,6 +90,17 @@ export default async function AccountPage({
 
   const totalEarned = Array.from(highestBidByAuction.values()).reduce((sum, amount) => sum + amount, 0);
   const activeListings = listings.filter((listing) => listing.status === "active").length;
+  const completedSales = listings.filter((listing) => listing.completed_at).length;
+  const { data: ownReviews } = await supabase.from("seller_reviews").select("rating").eq("seller_id", user.id);
+  const reviewCount = ownReviews?.length ?? 0;
+  const averageRating = reviewCount
+    ? ownReviews!.reduce((total, review) => total + review.rating, 0) / reviewCount
+    : 0;
+  const sellerTier = completedSales >= 20 && averageRating >= 4.8
+    ? "Top seller"
+    : completedSales >= 5 && averageRating >= 4.5
+      ? "Trusted seller"
+      : "New seller";
 
   return (
     <main className="min-h-screen bg-[linear-gradient(145deg,#f3f6f1_0%,#e7efe5_100%)] px-4 py-8 text-[#182522] sm:px-6 lg:px-8">
@@ -127,6 +142,7 @@ export default async function AccountPage({
             {successMessage}
           </div>
         ) : null}
+        {errorMessage ? <div role="alert" className="mb-6 rounded-[12px] border border-[#efc0bd] bg-[#fff3f1] px-4 py-3 text-sm font-medium text-[#8b2924]">{errorMessage}</div> : null}
 
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <section className="rounded-[24px] border border-[#d9e6d8] bg-white/90 p-5 shadow-[0_18px_42px_rgba(23,59,43,0.11)] sm:p-6">
@@ -158,6 +174,42 @@ export default async function AccountPage({
                 <p className="mt-2 text-lg font-bold text-[#173b2b]">{bids.length}</p>
               </div>
             </div>
+            <form action={updateSellerProfile} encType="multipart/form-data" className="mt-6 grid gap-4 border-t border-[#e4eae4] pt-6 sm:grid-cols-2">
+              <h3 className="text-lg font-bold text-[#173b2b] sm:col-span-2">Seller profile</h3>
+              <input type="hidden" name="currentAvatarUrl" value={sellerProfile?.avatar_url ?? ""} />
+              <label className="grid gap-2 text-sm font-semibold text-[#29452f] sm:col-span-2">
+                About your business or sales
+                <textarea name="bio" maxLength={500} defaultValue={sellerProfile?.bio ?? ""} className="min-h-24 rounded-md border border-[#c5d7c8] bg-[#f9fbf8] px-3 py-2 font-normal" />
+              </label>
+              <label className="grid gap-2 text-sm font-semibold text-[#29452f]">
+                Profile photo
+                <input name="avatar" type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="text-sm font-normal" />
+              </label>
+              <label className="grid gap-2 text-sm font-semibold text-[#29452f]">
+                Town
+                <input name="town" maxLength={100} defaultValue={sellerProfile?.town ?? ""} className="min-h-11 rounded-md border border-[#c5d7c8] bg-[#f9fbf8] px-3 font-normal" />
+              </label>
+              <label className="grid gap-2 text-sm font-semibold text-[#29452f]">
+                County
+                <select name="county" defaultValue={sellerProfile?.county ?? ""} className="min-h-11 rounded-md border border-[#c5d7c8] bg-[#f9fbf8] px-3 font-normal">
+                  <option value="">Select county</option>
+                  {IRISH_COUNTIES.map((name) => <option value={name.toLowerCase()} key={name}>{name}</option>)}
+                </select>
+              </label>
+              <label className="grid gap-2 text-sm font-semibold text-[#29452f]">
+                Public contact email
+                <input name="contactEmail" type="email" defaultValue={sellerProfile?.contact_email ?? ""} className="min-h-11 rounded-md border border-[#c5d7c8] bg-[#f9fbf8] px-3 font-normal" />
+              </label>
+              <label className="grid gap-2 text-sm font-semibold text-[#29452f]">
+                Public contact phone
+                <input name="contactPhone" type="tel" maxLength={40} defaultValue={sellerProfile?.contact_phone ?? ""} className="min-h-11 rounded-md border border-[#c5d7c8] bg-[#f9fbf8] px-3 font-normal" />
+              </label>
+              <div className="flex flex-wrap items-center gap-3 sm:col-span-2">
+                <span className="text-sm font-semibold text-[#29452f]">{sellerTier} · {completedSales} completed sales · {reviewCount ? `${averageRating.toFixed(1)} / 5 (${reviewCount})` : "No ratings yet"}</span>
+                <Link href={`/sellers/${user.id}`} className="text-sm font-semibold text-[#1d7a45] hover:underline">View public seller page</Link>
+                <button type="submit" className="ml-auto min-h-10 rounded-md bg-[#1d7a45] px-4 text-sm font-bold text-white">Save seller profile</button>
+              </div>
+            </form>
           </section>
 
           <aside className="rounded-[24px] border border-[#d9e6d8] bg-white/90 p-5 shadow-[0_18px_42px_rgba(23,59,43,0.11)] sm:p-6">

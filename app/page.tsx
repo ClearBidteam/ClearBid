@@ -10,7 +10,7 @@ type AuctionBidSummary = {
 export default async function Page() {
   const supabase = await createClient();
   const now = new Date().toISOString();
-  const [{ data: auctionData }, { data: bidSummaryData }] = await Promise.all([
+  const [{ data: auctionData }, { data: bidSummaryData }, { data: authData }] = await Promise.all([
     supabase
       .from("auctions")
       .select("id, title, description, short_description, category, county, location, image_url, starting_price, ends_at")
@@ -20,6 +20,7 @@ export default async function Page() {
       .order("ends_at", { ascending: true })
       .limit(50),
     supabase.rpc("get_auction_bid_summaries"),
+    supabase.auth.getUser(),
   ]);
 
   const bidSummaries = new Map<string, AuctionBidSummary>(
@@ -32,5 +33,10 @@ export default async function Page() {
     bid_count: bidSummaries.get(auction.id)?.bid_count ?? 0,
   }));
 
-  return <HomePage auctions={auctions} />;
+  const user = authData.user;
+  const displayName = user
+    ? String(user.user_metadata?.full_name ?? [user.user_metadata?.first_name, user.user_metadata?.last_name].filter(Boolean).join(" ") ?? user.email ?? "Account")
+    : null;
+
+  return <HomePage auctions={auctions} displayName={displayName} />;
 }

@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 
+import { IRISH_COUNTIES } from "@/lib/counties";
 import styles from "./home-page.module.css";
 
 type AuctionPreview = {
@@ -42,7 +43,7 @@ const categories = [
   { icon: "📦", label: "Collectables" },
 ];
 
-export default function HomePage({ auctions }: { auctions: AuctionPreview[] }) {
+export default function HomePage({ auctions, displayName }: { auctions: AuctionPreview[]; displayName: string | null }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [county, setCounty] = useState("");
@@ -84,13 +85,23 @@ export default function HomePage({ auctions }: { auctions: AuctionPreview[] }) {
             <a href="#categories" onClick={closeMenu}>Categories</a>
             <a href="#footer" onClick={closeMenu}>Help</a>
             <div className={styles.mobileActions}>
-              <Link className={styles.loginButton} href="/login" onClick={closeMenu}>Login</Link>
-              <Link className={styles.signupButton} href="/signup" onClick={closeMenu}>Sign Up</Link>
+              {displayName ? (
+                <Link className={styles.signupButton} href="/account" onClick={closeMenu}>My account</Link>
+              ) : <>
+                <Link className={styles.loginButton} href="/login" onClick={closeMenu}>Login</Link>
+                <Link className={styles.signupButton} href="/signup" onClick={closeMenu}>Sign Up</Link>
+              </>}
             </div>
           </nav>
           <div className={styles.navActions}>
-            <Link className={styles.loginButton} href="/login">Login</Link>
-            <Link className={styles.signupButton} href="/signup">Sign Up</Link>
+            {displayName ? (
+              <Link className={styles.signupButton} href="/account" aria-label={`Open ${displayName}'s profile`} title="Your profile">
+                {displayName.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}
+              </Link>
+            ) : <>
+              <Link className={styles.loginButton} href="/login">Login</Link>
+              <Link className={styles.signupButton} href="/signup">Sign Up</Link>
+            </>}
           </div>
           <button
             className={styles.menuToggle}
@@ -137,10 +148,9 @@ export default function HomePage({ auctions }: { auctions: AuctionPreview[] }) {
               <span className={styles.visuallyHidden}>Select county</span>
               <select value={county} onChange={(event) => setCounty(event.target.value)}>
                 <option value="">All Counties</option>
-                <option value="galway">Galway</option>
-                <option value="cork">Cork</option>
-                <option value="louth">Louth</option>
-                <option value="kildare">Kildare</option>
+                {IRISH_COUNTIES.map((name) => (
+                  <option value={name.toLowerCase()} key={name}>{name}</option>
+                ))}
               </select>
             </label>
             <button className={styles.searchButton} type="submit">Search</button>
